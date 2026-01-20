@@ -16,6 +16,8 @@ use wry::WebViewBuilder;
 #[cfg(target_os = "windows")]
 use tao::platform::windows::WindowExtWindows;
 #[cfg(target_os = "windows")]
+use windows::Win32::UI::Input::KeyboardAndMouse::{SendInput, INPUT, INPUT_0, INPUT_MOUSE, MOUSEEVENTF_LEFTDOWN, MOUSEEVENTF_LEFTUP, MOUSEINPUT};
+#[cfg(target_os = "windows")]
 use windows::Win32::UI::WindowsAndMessaging::{MessageBoxW, MB_OK, MB_ICONINFORMATION};
 #[cfg(target_os = "windows")]
 use windows::Win32::Foundation::HWND;
@@ -228,6 +230,12 @@ fn main() -> wry::Result<()> {
                 // Exit immediately without showing an autostart prompt
                 *control_flow = ControlFlow::Exit;
             }
+            Event::WindowEvent { event: WindowEvent::Focused(false), .. } => {
+                #[cfg(target_os = "windows")]
+                {
+                    click_left_once();
+                }
+            }
             _ => {}
         }
     });
@@ -394,6 +402,41 @@ fn remove_autostart(value_name: &str) -> windows::core::Result<()> {
 fn to_wide(s: &str) -> Vec<u16> {
     use std::os::windows::ffi::OsStrExt;
     std::ffi::OsStr::new(s).encode_wide().chain(std::iter::once(0)).collect()
+}
+
+#[cfg(target_os = "windows")]
+fn click_left_once() {
+    let mut inputs = [
+        INPUT {
+            r#type: INPUT_MOUSE,
+            Anonymous: INPUT_0 {
+                mi: MOUSEINPUT {
+                    dx: 0,
+                    dy: 0,
+                    mouseData: 0,
+                    dwFlags: MOUSEEVENTF_LEFTDOWN,
+                    time: 0,
+                    dwExtraInfo: 0,
+                },
+            },
+        },
+        INPUT {
+            r#type: INPUT_MOUSE,
+            Anonymous: INPUT_0 {
+                mi: MOUSEINPUT {
+                    dx: 0,
+                    dy: 0,
+                    mouseData: 0,
+                    dwFlags: MOUSEEVENTF_LEFTUP,
+                    time: 0,
+                    dwExtraInfo: 0,
+                },
+            },
+        },
+    ];
+    unsafe {
+        let _ = SendInput(&inputs, std::mem::size_of::<INPUT>() as i32);
+    }
 }
 
 #[cfg(target_os = "windows")]

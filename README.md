@@ -1,6 +1,6 @@
 # Sans The security guard!
 
-### IT IS BROKEN RIGHT NOW. RELEASE 1.1.0 WILL COME WHEN I FINISH DEBUGGING
+### 1.1.0 is OUT!!!!!!!!!!!
 
 Giving Intruders (Or maybe you) a bad time.
 

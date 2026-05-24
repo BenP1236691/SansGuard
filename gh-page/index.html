@@ -91,33 +91,6 @@
 		{
 			// Create new runtime using the c2canvas
 			cr_createRuntime("c2canvas");
-
-			// Workaround: the AttackLoader's "load finished" callback never fires because
-			// MainMenu and BattleScreen both include the AttackLoader event sheet, so layout
-			// start runs the load chain twice and FileIndex overshoots the comparison that
-			// would otherwise trigger AttackLoadFinished -> EndAttack -> BattleMenuEnable(1).
-			// Result: MenuState stays 0 and pressing Z on FIGHT does nothing. Poll until
-			// the runtime is ready, then call BattleMenuEnable(1) directly to unstick it.
-			(function unstickMenu() {
-				var deadline = Date.now() + 15000;
-				var iv = setInterval(function () {
-					try {
-						if (typeof c2_callFunction !== "function" || !cr_getC2Runtime || !cr_getC2Runtime()) {
-							if (Date.now() > deadline) clearInterval(iv);
-							return;
-						}
-						var rt = cr_getC2Runtime();
-						if (!rt.ba || rt.ba.name !== "BattleScreen") {
-							if (Date.now() > deadline) clearInterval(iv);
-							return;
-						}
-						c2_callFunction("EndAttack", []);
-						clearInterval(iv);
-					} catch (e) {
-						if (Date.now() > deadline) clearInterval(iv);
-					}
-				}, 250);
-			})();
 		});
 		
 		// Pause and resume on page becoming visible/invisible
